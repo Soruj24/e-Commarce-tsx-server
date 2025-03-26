@@ -4,10 +4,6 @@ import morgan from 'morgan';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 
-// Import routes
-import userRoutes from './routes/userRoutes';
-
-
 // Configure environment variables
 dotenv.config();
 
@@ -20,11 +16,19 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Mount routes
-app.use('/api/v1/users', userRoutes);
+// Example route (assuming you have a userRoutes)
+// app.use('/api/v1/users', userRoutes);
 
+// Route Error Handler
+app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const error = new Error('Route not found');
+  res.status(404).json({
+    success: false,
+    message: error.message
+  });
+});
 
-// Error handling middleware
+// Error handling middleware (for catching internal errors)
 app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error(err.stack);
   res.status(500).json({

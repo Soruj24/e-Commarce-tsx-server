@@ -1,11 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.ts",
+  "types": "server.d.ts",
   "scripts": {
-    "start": "node dist/server.js",
     "dev": "ts-node src/server.ts",
     "prod": "node dist/server.js",
+    "start": "nodemon src/server.ts",
     "build": "tsc",
     "watch": "tsc -w"
   },
@@ -36,6 +37,7 @@
     "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.13",
+    "nodemon": "^3.1.9",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.2"
   }
