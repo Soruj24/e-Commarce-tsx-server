@@ -1,12 +1,10 @@
 import express from 'express';
+import { handelUserSignup } from '../controllers/userController';
+import { Request, Response, NextFunction } from 'express';
+
+const userRouter = express.Router();
+
+userRouter.post('/signup', handelUserSignup);
 
 
-const router = express.Router();
-
-// router.post('/', createUser);
-// router.get('/', getAllUsers);
-// router.get('/:id', getUserById);
-// router.put('/:id', updateUser);
-// router.delete('/:id', deleteUser);
-
-export default router;
+export default userRouter;

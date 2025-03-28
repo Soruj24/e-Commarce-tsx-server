@@ -3,6 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import userRouter from './routes/userRoutes';
 
 // Configure environment variables
 dotenv.config();
@@ -16,8 +17,7 @@ app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
 
-// Example route (assuming you have a userRoutes)
-// app.use('/api/v1/users', userRoutes);
+  app.use('/api/v1/users', userRouter);
 
 // Route Error Handler
 app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {

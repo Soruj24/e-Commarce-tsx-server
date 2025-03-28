@@ -1,31 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
-import User, { IUser } from '../models/User';
+import User from '../models/User';
 
-// Create new user
-export const createUser = async (req: Request, res: Response, next: NextFunction) => {
+const handelUserSignup = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
         const { name, email, password } = req.body;
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(400).json({
+            res.status(400).json({
                 success: false,
                 message: 'Email already registered'
             });
+            return;
         }
 
-        const user = await User.create({
-            name,
-            email,
-            password
-        });
+        // const user = await User.create({
+        //     name,
+        //     email,
+        //     password
+        // });
 
-        // Remove password from response
-        (user as any).password = undefined;
-
+       
         res.status(201).json({
             success: true,
-            data: user
+            
         });
     } catch (error) {
         next(error);
@@ -33,7 +35,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // Get all users
-export const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const users = await User.find().select('-password');
         res.status(200).json({
@@ -47,10 +49,10 @@ export const getAllUsers = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Get single user
-export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+const getUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
-        
+
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -68,10 +70,10 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Update user
-export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, email } = req.body;
-        
+
         const user = await User.findByIdAndUpdate(
             req.params.id,
             { name, email },
@@ -98,7 +100,7 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 };
 
 // Delete user
-export const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
 
@@ -116,4 +118,13 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
     } catch (error) {
         next(error);
     }
+};
+
+// Export all functions
+export {
+    handelUserSignup,
+    getAllUsers,
+    getUserById,
+    updateUser,
+    deleteUser
 };
