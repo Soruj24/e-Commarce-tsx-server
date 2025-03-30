@@ -1,34 +1,36 @@
 import { Request, Response, NextFunction } from 'express';
-import User from '../models/User';
+import createHttpError from 'http-errors';
 
-const handelUserSignup = async (
+import User from '../models/User';
+import { errorResponse, successResponse } from './responesController';
+
+const handleUserSignup = async (
     req: Request,
     res: Response,
     next: NextFunction
 ): Promise<void> => {
     try {
-        const { name, email, password } = req.body;
+        const { username, email, password } = req.body;
+
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            res.status(400).json({
-                success: false,
-                message: 'Email already registered'
-            });
-            return;
+            next(createHttpError(400, "Email already Exit", ));
         }
 
-        // const user = await User.create({
-        //     name,
-        //     email,
-        //     password
-        // });
-
-       
-        res.status(201).json({
-            success: true,
-            
+        // Create the user
+        const user = await User.create({
+            username,
+            email,
+            password,
         });
+
+        successResponse(res, {
+            statusCode: 201,
+            message: "User created successfully",
+            payload: { user },
+        });
+
     } catch (error) {
         next(error);
     }
@@ -122,7 +124,7 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
 
 // Export all functions
 export {
-    handelUserSignup,
+    handleUserSignup,
     getAllUsers,
     getUserById,
     updateUser,

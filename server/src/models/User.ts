@@ -1,21 +1,15 @@
 import mongoose, { Document } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { IUser } from '../types';
 
-export interface IUser extends Document {
-    name: string;
-    email: string;
-    password: string;
-    role: 'user' | 'admin';
-    createdAt: Date;
-    comparePassword(candidatePassword: string): Promise<boolean>;
-}
+
 
 const userSchema = new mongoose.Schema({
-    name: {
+    username: {
         type: String,
         required: [true, 'Please enter your name'],
         maxLength: [30, 'Name cannot exceed 30 characters']
-    },
+    }, 
     email: {
         type: String,
         required: [true, 'Please enter your email'],
