@@ -5,6 +5,7 @@ import { API_KEY, API_SECRET, CLOUD_NAME } from '../secret';
 
 import User from '../models/User';
 import { successResponse } from './responesController';
+import mongoose from 'mongoose';
 
 cloudinary.config({
     cloud_name: CLOUD_NAME,
@@ -132,25 +133,34 @@ const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction
 
 
 // Get single user
-const handleGetUserById = async (req: Request, res: Response, next: NextFunction) => {
+const handleGetUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const user = await User.findById(req.params.id).select('-password');
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+        const userId = req.params.id;
+        // Validate ID format
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw createHttpError(400, "Invalid user ID format");
+        }
+        if (!userId) {
+            throw createHttpError(400, "User ID is required");
         }
 
-        res.status(200).json({
-            success: true,
-            data: user
+        const user = await User.findById(userId).select('-password -__v');
+        if (!user) {
+            throw createHttpError(404, "User not found");
+        }
+
+        successResponse(res, {
+            statusCode: 200,  // Changed from 201 to 200 since this is a GET request
+            message: "User retrieved successfully",
+            payload: { user },
         });
+ 
     } catch (error) {
         next(error);
     }
 };
+
+export default handleGetUserById;
 
 // Update user
 const handleUpdateUser = async (req: Request, res: Response, next: NextFunction) => {
@@ -173,10 +183,12 @@ const handleUpdateUser = async (req: Request, res: Response, next: NextFunction)
             });
         }
 
-        res.status(200).json({
-            success: true,
-            data: user
+       successResponse(res, {
+            statusCode: 201,
+            message: "User update successfully",
+            payload: { user },
         });
+
     } catch (error) {
         next(error);
     }
@@ -194,9 +206,11 @@ const handleDeleteUser = async (req: Request, res: Response, next: NextFunction)
             });
         }
 
-        res.status(200).json({
-            success: true,
-            message: 'User deleted successfully'
+         
+        successResponse(res, {
+            statusCode: 201,
+            message: 'User deleted successfully',
+            payload: { user },
         });
     } catch (error) {
         next(error);
