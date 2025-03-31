@@ -39,7 +39,7 @@ if (process.env.NODE_ENV === 'development') {
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 5, // Limit each IP to 5 requests per windowMs
   message: 'Too many requests from this IP, please try again after 15 minutes',
   standardHeaders: true,
   legacyHeaders: false,
@@ -77,8 +77,8 @@ app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
 
   if (err instanceof Error) {
     message = err.message;
-    if ((err as any).status) statusCode = (err as any).status;  
-    if ((err as any).errors) errors = (err as any).errors; 
+    if ((err as any).status) statusCode = (err as any).status;
+    if ((err as any).errors) errors = (err as any).errors;
   }
 
   errorResponse(res, {

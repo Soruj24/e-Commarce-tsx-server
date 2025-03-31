@@ -1,12 +1,12 @@
 import express from 'express';
 import { handleUserSignup } from '../controllers/userController';
-import { Request, Response, NextFunction } from 'express';
 import { singupValidate } from '../validator/singupValidation';
 import { runValidation } from '../validator';
+import { uploadFile } from '../middleware/imageUpload';
 
 const userRouter = express.Router();
 
-userRouter.post('/signup', singupValidate, runValidation, handleUserSignup);
+userRouter.post('/signup',  uploadFile.single('image'), singupValidate, runValidation,  handleUserSignup);
 
 
 export default userRouter;

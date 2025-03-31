@@ -1,8 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
+import { v2 as cloudinary } from 'cloudinary';
+import { API_KEY, API_SECRET, CLOUD_NAME } from '../secret';
 
 import User from '../models/User';
-import { errorResponse, successResponse } from './responesController';
+import { successResponse } from './responesController';
+
+cloudinary.config({
+    cloud_name: CLOUD_NAME,
+    api_key: API_KEY,
+    api_secret: API_SECRET
+});
 
 const handleUserSignup = async (
     req: Request,
@@ -12,10 +20,28 @@ const handleUserSignup = async (
     try {
         const { username, email, password } = req.body;
 
+      const image = req.file ? req.file : null;
+
+        if (!image) {
+            return next(createHttpError(400, "No image file provided"));
+        }
+        
+        const uploadedImage = await cloudinary.uploader.upload(image.path, {
+            folder: 'user_images',
+            crop: 'scale',
+            public_id: `${Date.now()}`,
+            resource_type: 'auto',
+        });
+
+        if (!uploadedImage) {
+            return next(createHttpError(400, "File upload failed"));
+        }
+
+        console.log(uploadedImage, 'uploadedImage');
 
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            next(createHttpError(400, "Email already Exit", ));
+            next(createHttpError(400, "Email already Exit",));
         }
 
         // Create the user
@@ -23,12 +49,13 @@ const handleUserSignup = async (
             username,
             email,
             password,
+            image: uploadedImage.secure_url,
         });
 
         successResponse(res, {
             statusCode: 201,
             message: "User created successfully",
-            payload: { user },
+            payload: { user},
         });
 
     } catch (error) {
@@ -37,7 +64,7 @@ const handleUserSignup = async (
 };
 
 // Get all users
-const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
+const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const users = await User.find().select('-password');
         res.status(200).json({
@@ -51,7 +78,7 @@ const getAllUsers = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Get single user
-const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+const handleGetUserById = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
 
@@ -72,7 +99,7 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Update user
-const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+const handleUpdateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { name, email } = req.body;
 
@@ -102,7 +129,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 // Delete user
-const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
+const handleDeleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
 
@@ -125,8 +152,8 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
 // Export all functions
 export {
     handleUserSignup,
-    getAllUsers,
-    getUserById,
-    updateUser,
-    deleteUser
+    handleGetAllUsers,
+    handleGetUserById,
+    handleUpdateUser,
+    handleDeleteUser
 };

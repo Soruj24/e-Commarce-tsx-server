@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please enter your name'],
         maxLength: [30, 'Name cannot exceed 30 characters']
-    }, 
+    },
     email: {
         type: String,
         required: [true, 'Please enter your email'],
@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Please enter your password'],
         minLength: [6, 'Password must be at least 6 characters'],
         select: false
+    },
+    image: {
+        type: String,
+        default: 'https://res.cloudinary.com/dbe49mmnp/image/upload/v1724936100/fybrc036gvfqnemi91sl.png'
     },
     role: {
         type: String,
