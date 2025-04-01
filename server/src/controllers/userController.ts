@@ -85,7 +85,7 @@ const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction
             ];
         }
 
-        if (role) filter.role = role;  
+        if (role) filter.role = role;
         if (isActive) filter.isActive = isActive === 'true';
 
         // Sorting options
@@ -101,7 +101,7 @@ const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction
                 .skip(skip)
                 .limit(limit),
             User.countDocuments(filter)
-        ]); 
+        ]);
 
         // Calculate pagination metadata
         const totalPages = Math.ceil(totalUser / limit);
@@ -154,7 +154,7 @@ const handleGetUserById = async (req: Request, res: Response, next: NextFunction
             message: "User retrieved successfully",
             payload: { user },
         });
- 
+
     } catch (error) {
         next(error);
     }
@@ -183,7 +183,7 @@ const handleUpdateUser = async (req: Request, res: Response, next: NextFunction)
             });
         }
 
-       successResponse(res, {
+        successResponse(res, {
             statusCode: 201,
             message: "User update successfully",
             payload: { user },
@@ -197,25 +197,33 @@ const handleUpdateUser = async (req: Request, res: Response, next: NextFunction)
 // Delete user
 const handleDeleteUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const user = await User.findByIdAndDelete(req.params.id);
+        const userId = req.params.id;
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+        // Validate ID format
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw createHttpError(400, "Invalid user ID format");
         }
 
-         
+        // Check if user exists
+        const user = await User.findById(userId);
+        if (!user) {
+            throw createHttpError(404, "User not found");
+        }
+
+
+        const deleteUser = await User.findByIdAndDelete(userId);
+
         successResponse(res, {
-            statusCode: 201,
-            message: 'User deleted successfully',
-            payload: { user },
+            statusCode: 200,
+            message: "User deleted successfully",
+            payload: { deleteUser },
         });
+
     } catch (error) {
         next(error);
     }
 };
+
 
 // Export all functions
 export {
