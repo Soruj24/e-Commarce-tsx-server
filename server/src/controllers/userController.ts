@@ -160,33 +160,41 @@ const handleGetUserById = async (req: Request, res: Response, next: NextFunction
     }
 };
 
-export default handleGetUserById;
 
 // Update user
 const handleUpdateUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { name, email } = req.body;
+        const userId = req.params.id;
 
-        const user = await User.findByIdAndUpdate(
-            req.params.id,
-            { name, email },
-            {
-                new: true,
-                runValidators: true
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            throw createHttpError(400, "Invalid user ID format");
+        }
+
+        const updateOptions = { new: true, runValidators: true, context: "query" };
+        let updates: Record<string, any> = {};
+
+        for (let key in req.body) {
+            if (key === "username") {
+                updates[key] = req.body[key];
+            } else if (key === "email") {
+                throw createHttpError(400, "You can't update email");
             }
-        ).select('-password');
+        }
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+        if (Object.keys(updates).length === 0) {
+            throw createHttpError(400, "No valid fields to update");
+        }
+
+        const userUpdate = await User.findByIdAndUpdate(userId, updates, updateOptions);
+
+        if (!userUpdate) {
+            throw createHttpError(404, "User not found or update failed");
         }
 
         successResponse(res, {
-            statusCode: 201,
-            message: "User update successfully",
-            payload: { user },
+            statusCode: 200,
+            message: "User updated successfully",
+            payload: { userUpdate },
         });
 
     } catch (error) {
