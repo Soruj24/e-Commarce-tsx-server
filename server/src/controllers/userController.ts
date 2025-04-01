@@ -6,6 +6,7 @@ import { API_KEY, API_SECRET, CLOUD_NAME } from '../secret';
 import User from '../models/User';
 import { successResponse } from './responesController';
 import mongoose from 'mongoose';
+import { findUserById } from '../services/userServices';
 
 cloudinary.config({
     cloud_name: CLOUD_NAME,
@@ -136,13 +137,7 @@ const handleGetAllUsers = async (req: Request, res: Response, next: NextFunction
 const handleGetUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         const userId = req.params.id;
-        // Validate ID format
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            throw createHttpError(400, "Invalid user ID format");
-        }
-        if (!userId) {
-            throw createHttpError(400, "User ID is required");
-        }
+        await findUserById(userId);
 
         const user = await User.findById(userId).select('-password -__v');
         if (!user) {
@@ -166,9 +161,7 @@ const handleUpdateUser = async (req: Request, res: Response, next: NextFunction)
     try {
         const userId = req.params.id;
 
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            throw createHttpError(400, "Invalid user ID format");
-        }
+        await findUserById(userId);
 
         const updateOptions = { new: true, runValidators: true, context: "query" };
         let updates: Record<string, any> = {};
@@ -207,17 +200,7 @@ const handleDeleteUser = async (req: Request, res: Response, next: NextFunction)
     try {
         const userId = req.params.id;
 
-        // Validate ID format
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            throw createHttpError(400, "Invalid user ID format");
-        }
-
-        // Check if user exists
-        const user = await User.findById(userId);
-        if (!user) {
-            throw createHttpError(404, "User not found");
-        }
-
+        await findUserById(userId);
 
         const deleteUser = await User.findByIdAndDelete(userId);
 
